@@ -56,15 +56,26 @@ if want docker-build-cache; then
 fi
 
 if want dev-caches; then
-  echo "Clearing known dev-tool caches (regenerate on next use)..."
-  for d in huggingface uv pyright-python github-copilot pip; do
-    if [ -d ~/.cache/"$d" ]; then
-      rm -rf ~/.cache/"$d"
-      echo "  removed ~/.cache/$d"
-    fi
-  done
-  [ -d ~/Library/Caches/pip ] && rm -rf ~/Library/Caches/pip/*
-  [ -d ~/Library/Caches/go-build ] && rm -rf ~/Library/Caches/go-build/*
+  echo "Clearing dev-tool caches (regenerate on next use)..."
+
+  # ~/.cache follows the XDG cache convention: whatever tool created a
+  # subfolder there treats it as disposable. That holds regardless of which
+  # specific tools happen to be installed on this machine, so wipe all of
+  # it rather than guessing at a fixed list of tool names.
+  if [ -d ~/.cache ]; then
+    for d in ~/.cache/*/; do
+      [ -d "$d" ] && rm -rf "$d" && echo "  removed $d"
+    done
+  fi
+
+  # Prefer each tool's own cache-clean command when it's installed - more
+  # correct than guessing internal paths, and keeps working as tools change.
+  command -v pip  >/dev/null 2>&1 && pip  cache purge        >/dev/null 2>&1
+  command -v pip3 >/dev/null 2>&1 && pip3 cache purge        >/dev/null 2>&1
+  command -v npm  >/dev/null 2>&1 && npm  cache clean --force >/dev/null 2>&1
+  command -v yarn >/dev/null 2>&1 && yarn cache clean         >/dev/null 2>&1
+  command -v go   >/dev/null 2>&1 && go   clean -cache        >/dev/null 2>&1
+  command -v brew >/dev/null 2>&1 && brew cleanup -s          >/dev/null 2>&1
 fi
 
 echo "After:"

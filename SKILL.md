@@ -39,7 +39,7 @@ One environment quirk worth knowing: `xcrun simctl` fails whenever `xcode-select
 
 **macOS wallpaper aerial cache** (`~/Library/Application Support/com.apple.wallpaper/aerials/`) — always safe. macOS re-downloads whichever aerials it actually displays.
 
-**Dev tool caches** (`~/.cache/*` — things like `huggingface`, `uv`, `pip`, `pyright`, `github-copilot` — plus `~/Library/Caches/pip`, `~/Library/Caches/go-build`, npm/yarn caches) — all regenerate on next use. Always safe.
+**Dev tool caches** — `~/.cache/*` follows the XDG cache convention: whatever tool put a subfolder there treats it as disposable. That's true no matter which specific tools are installed on a given machine (today it might be a package manager and a language server, tomorrow something else entirely), so it's safe to clear the whole directory rather than maintaining a list of known tool names. Where a tool ships its own cache-clean command (`pip cache purge`, `npm cache clean --force`, `yarn cache clean`, `go clean -cache`, `brew cleanup`), prefer that over guessing at internal paths — it's correct regardless of how that tool is configured. Always safe.
 
 **`~/.Trash`** — a sandboxed terminal is often denied permission to even look inside it ("Operation not permitted"). That's not nothing-to-see, it's a tool limitation — tell the user to check and empty it from Finder themselves rather than reporting it as empty.
 

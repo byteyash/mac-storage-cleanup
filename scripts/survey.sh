@@ -74,7 +74,7 @@ fi
 
 hr "JetBrains IDE versions: installed vs stored config"
 echo "--- Installed apps (check each one's version in Finder/About if this doesn't show it) ---"
-ls /Applications 2>/dev/null | grep -i -E "intellij|pycharm|webstorm|clion|rider|goland|idea" || echo "(none found in /Applications)"
+ls /Applications 2>/dev/null | grep -i -E "intellij|pycharm|webstorm|clion|rider|goland|idea|datagrip|appcode|rubymine|phpstorm|dataspell|fleet" || echo "(none found in /Applications)"
 echo "--- Config folders under ~/Library/Application Support/JetBrains ---"
 du -sh ~/Library/"Application Support"/JetBrains/*/ 2>/dev/null | sort -rh
 echo "--- Log folders under ~/Library/Logs/JetBrains ---"
