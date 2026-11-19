@@ -83,6 +83,38 @@ du -sh ~/Library/Logs/JetBrains/*/ 2>/dev/null | sort -rh
 hr "macOS wallpaper aerial cache"
 du -sh ~/Library/"Application Support"/com.apple.wallpaper/aerials 2>/dev/null || echo "(not present)"
 
+hr "iOS/iPadOS device backups (Finder/iTunes-style)"
+if [ -d ~/Library/"Application Support"/MobileSync/Backup ]; then
+  du -sh ~/Library/"Application Support"/MobileSync/Backup/*/ 2>/dev/null | sort -rh
+else
+  echo "(none found)"
+fi
+
+hr "Homebrew cache"
+if command -v brew >/dev/null 2>&1; then
+  cache_dir="$(brew --cache 2>/dev/null)"
+  [ -n "$cache_dir" ] && du -sh "$cache_dir" 2>/dev/null
+else
+  echo "Homebrew not installed."
+fi
+
+hr "Browser caches"
+found_browser_cache=0
+for b in Safari Google/Chrome "Microsoft Edge" Arc Firefox BraveSoftware/Brave-Browser; do
+  d=~/Library/Caches/"$b"
+  if [ -d "$d" ]; then
+    du -sh "$d" 2>/dev/null
+    found_browser_cache=1
+  fi
+done
+[ "$found_browser_cache" = 0 ] && echo "(none of the common browser cache paths found)"
+
+hr "Large files not already covered above (over 200MB, outside ~/Library)"
+echo "Anything surfaced here is almost certainly personal content, not app cache - list it, never delete without asking."
+find ~ -xdev -size +200M -not -path "*/Library/*" -not -path "*/.Trash/*" 2>/dev/null \
+  | while IFS= read -r f; do du -sh "$f" 2>/dev/null; done \
+  | sort -rh | head -20
+
 hr "Trash"
 du -sh ~/.Trash 2>&1 || echo "(couldn't read ~/.Trash from here — common in a sandboxed terminal; ask the user to check/empty it from Finder)"
 

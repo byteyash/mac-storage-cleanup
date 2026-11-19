@@ -1,17 +1,19 @@
 #!/usr/bin/env bash
 # Clears ONLY categories that are pure, regenerable cache - nothing here can lose user data.
 # Each category below was deliberately chosen because the thing it deletes rebuilds itself
-# automatically (Xcode re-derives, macOS re-downloads aerials, package managers re-fetch).
+# automatically (Xcode re-derives, macOS re-downloads aerials, package managers re-fetch,
+# browsers rebuild their HTTP cache on next page load).
 #
 # Usage:
-#   safe_clear.sh                 # clear every category
-#   safe_clear.sh xcode wallpaper # clear only the named categories
+#   safe_clear.sh                          # clear every category
+#   safe_clear.sh xcode-derived wallpaper   # clear only the named categories
 #
-# Categories: xcode-derived, xcode-previews, wallpaper, docker-build-cache, dev-caches
+# Categories: xcode-derived, xcode-previews, wallpaper, docker-build-cache,
+#             dev-caches, browser-caches
 #
 # Deliberately NOT handled here, because they need a judgment call or explicit user
 # sign-off first (see SKILL.md): Docker images/volumes, old JetBrains version folders,
-# simulator runtimes, anything in the user's personal files.
+# simulator runtimes, iOS device backups, and anything in the user's personal files.
 
 set -u
 
@@ -76,6 +78,17 @@ if want dev-caches; then
   command -v yarn >/dev/null 2>&1 && yarn cache clean         >/dev/null 2>&1
   command -v go   >/dev/null 2>&1 && go   clean -cache        >/dev/null 2>&1
   command -v brew >/dev/null 2>&1 && brew cleanup -s          >/dev/null 2>&1
+fi
+
+if want browser-caches; then
+  echo "Clearing browser HTTP caches (not cookies/history/sessions - those live elsewhere)..."
+  for b in Safari Google/Chrome "Microsoft Edge" Arc Firefox BraveSoftware/Brave-Browser; do
+    d=~/Library/Caches/"$b"
+    if [ -d "$d" ]; then
+      rm -rf "$d"/*
+      echo "  cleared $d"
+    fi
+  done
 fi
 
 echo "After:"

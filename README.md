@@ -1,6 +1,6 @@
 # mac-storage-cleanup
 
-A [Claude Code](https://claude.com/claude-code) / Claude Agent skill that surveys a Mac for reclaimable disk space — Docker, Xcode and iOS Simulators, JetBrains IDEs, dev-tool caches, macOS system caches — and clears what it finds, asking you first about anything that isn't pure, regenerable cache.
+A [Claude Code](https://claude.com/claude-code) / Claude Agent skill that surveys a Mac for reclaimable disk space — Docker, Xcode and iOS Simulators, JetBrains and other IDEs, dev-tool and browser caches, iOS device backups, Homebrew, macOS system caches, plus a generic sweep for anything else unusually large — and clears what it finds, asking you first about anything that isn't pure, regenerable cache.
 
 It never touches Docker volumes, the currently-installed version of an app, or your personal files (Desktop, Downloads, screen recordings, etc.) without being asked explicitly.
 
@@ -34,11 +34,11 @@ Just ask Claude Code naturally — you don't need to name the skill. Things like
 
 Claude will read the skill and follow its workflow:
 
-1. **Survey, read-only.** Runs `scripts/survey.sh` to get a full picture — overall disk usage, then a breakdown of Docker, Xcode/Simulators, JetBrains, macOS caches, and dev-tool caches. Nothing is deleted at this stage.
+1. **Survey, read-only.** Runs `scripts/survey.sh` to get a full picture — overall disk usage, then a breakdown of Docker, Xcode/Simulators, JetBrains, macOS caches, dev-tool and browser caches, iOS device backups, Homebrew, and a generic sweep for any other unusually large files that don't fit a named category. Nothing is deleted at this stage.
 2. **Present findings as a table** — what was found, how big, and whether it's safe to clear, reclaimable-but-worth-asking, or real data that won't be touched.
 3. **Clear in two tiers:**
-   - Pure cache (Xcode build caches, the macOS wallpaper video cache, Docker's build cache, dev-tool caches under `~/.cache` and friends) gets cleared directly via `scripts/safe_clear.sh` — these regenerate automatically, so there's nothing to lose.
-   - Everything else that's reclaimable (unused Docker images, old JetBrains versions, extra iOS simulator runtimes) gets asked about one category at a time before anything happens.
+   - Pure cache (Xcode build caches, the macOS wallpaper video cache, Docker's build cache, dev-tool caches under `~/.cache` and friends, browser HTTP caches) gets cleared directly via `scripts/safe_clear.sh` — these regenerate automatically, so there's nothing to lose.
+   - Everything else that's reclaimable (unused Docker images, old JetBrains versions, extra iOS simulator runtimes, old device backups, anything the catch-all sweep turned up) gets asked about one category at a time before anything happens.
 4. **Reports real numbers.** Before/after disk usage from `df`, plus a running total of what's been freed across the conversation.
 
 ### Running the scripts directly
@@ -56,9 +56,9 @@ bash ~/.claude/skills/mac-storage-cleanup/scripts/safe_clear.sh
 bash ~/.claude/skills/mac-storage-cleanup/scripts/safe_clear.sh xcode-derived wallpaper
 ```
 
-Valid categories for `safe_clear.sh`: `xcode-derived`, `xcode-previews`, `wallpaper`, `docker-build-cache`, `dev-caches`. With no arguments, it clears all of them.
+Valid categories for `safe_clear.sh`: `xcode-derived`, `xcode-previews`, `wallpaper`, `docker-build-cache`, `dev-caches`, `browser-caches`. With no arguments, it clears all of them.
 
-Deliberately *not* handled by `safe_clear.sh` — these need a judgment call, so they're left to the conversation with Claude described above: unused Docker images, Docker volumes, old JetBrains IDE versions, extra iOS simulator runtimes, and anything in your personal files.
+Deliberately *not* handled by `safe_clear.sh` — these need a judgment call, so they're left to the conversation with Claude described above: unused Docker images, Docker volumes, old JetBrains IDE versions, extra iOS simulator runtimes, iOS device backups, and anything in your personal files.
 
 ## Safety guarantees
 
