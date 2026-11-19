@@ -60,10 +60,12 @@ Valid categories for `safe_clear.sh`: `xcode-derived`, `xcode-previews`, `wallpa
 
 Deliberately *not* handled by `safe_clear.sh` — these need a judgment call, so they're left to the conversation with Claude described above: unused Docker images, Docker volumes, old JetBrains IDE versions, extra iOS simulator runtimes, and anything in your personal files.
 
-## What it does not do
+## Safety guarantees
 
-- Never deletes a Docker volume without listing it by name first — volume names like `*_pgdata` or `*_mongodata` are almost always a real project database.
-- Never touches the JetBrains config folder matching whatever version you currently have installed.
-- Never runs `xcode-select -s` to fix a missing `simctl` — it calls the `simctl` binary bundled inside `Xcode.app` directly instead, so your Xcode selection is left alone.
-- Never clears Desktop, Downloads, Documents, screenshots, or other personal files without you explicitly saying to after seeing what's there.
-- Can't read `~/.Trash` from a sandboxed terminal — Claude will tell you to check/empty it from Finder yourself.
+These hold regardless of what's actually installed on the machine it's run on:
+
+- **Real, stored data is never deleted on its own judgment.** Anything that looks like an actual database or saved state — a Docker volume, a project's data directory — gets listed by name for you to decide, never removed automatically.
+- **Nothing currently in use gets treated as a leftover.** An app's active config, the version you have installed right now, a runtime matching your current toolchain — only things that are genuinely orphaned (no matching install left) are ever candidates for cleanup.
+- **It adapts to the environment instead of changing it.** Where a tool is missing or misconfigured, the skill works around that quirk rather than altering system-level settings to fix it.
+- **Your own files are out of scope.** Desktop, Downloads, Documents, photos, recordings — anything that's clearly your content rather than an app's cache — is only touched if you explicitly say to after seeing what's there.
+- **A blind spot is reported as a blind spot, not glossed over.** If something can't be inspected (permissions, sandboxing, a tool not being installed), you're told that directly instead of being given a false "all clear."
